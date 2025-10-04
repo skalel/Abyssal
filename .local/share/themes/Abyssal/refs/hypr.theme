@@ -6,10 +6,10 @@ $HOME/.config/hypr/themes/theme.conf|> $HOME/.config/hypr/themes/colors.conf
 #   |____|          \______  /|__|   / ____||   __/|__|
 #                          \/        \/     |__|
 
-$GTK_THEME = Gruvbox-Retro
-$ICON_THEME = Gruvbox-Plus-Dark
-$CURSOR_THEME = Gruvbox-Retro
-$CURSOR_SIZE = 20
+$GTK_THEME = Graphite-Dark
+$ICON_THEME = BlackoutIcons
+$CURSOR_THEME = BreezeX-Dark
+$CURSOR_SIZE = 30
 $COLOR_SCHEME = prefer-dark
 
 # Optional: The varibles above will be set automatically when the theme is loaded
