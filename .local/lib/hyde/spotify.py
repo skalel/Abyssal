@@ -5,6 +5,7 @@ import time
 import sys
 import json
 import html
+import os
 
 ICON = ""
 MAX_CHAR = 12
@@ -27,7 +28,11 @@ def is_spotify_running():
         return False
 
 def launch_spotify():
-    subprocess.Popen(["gtk-launch", "spotify"])
+    subprocess.Popen(
+        ["setsid", "gtk-launch", "spotify"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
 
 def toggle_play_pause():
     subprocess.Popen(["playerctl", "play-pause", "--player=spotify"])
