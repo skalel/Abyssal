@@ -66,11 +66,11 @@
     },
     "group/pill#right3": {
         "modules": [
-            "custom/gamemode",
             "privacy",
             "tray",
             "battery",
-            "custom/dunst"
+            "custom/swaync",
+            "custom/gamemode"
         ],
         "orientation": "inherit"
     },

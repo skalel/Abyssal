@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
     <object class="GtkMenu" id="menu">
-
-
         <child>
             <object class="GtkMenuItem" id="toggle-dnd">
                 <property name="label">  Toggle DND</property>
@@ -39,10 +37,6 @@
             <object class="GtkMenuItem" id="clear-all">
                 <property name="label">󰎟  Clear History</property>
             </object>
-        </child>
-
-
-        <child>
         </child>
     </object>
 </interface>
