@@ -7,10 +7,8 @@ import json
 import html
 
 ICON = ""
-MAX_TOTAL = 30
 MAX_CHAR = 12
 SCROLL_DELAY = 0.2
-
 
 def run(cmd):
     try:
@@ -18,18 +16,28 @@ def run(cmd):
     except subprocess.CalledProcessError:
         return ""
 
-
 def escape_pango(text):
     return html.escape(text, quote=False)
 
+def is_spotify_running():
+    try:
+        out = subprocess.check_output(["pgrep", "-x", "spotify"], text=True).strip()
+        return bool(out)
+    except subprocess.CalledProcessError:
+        return False
+
+def launch_spotify():
+    subprocess.Popen(["gtk-launch", "spotify"])
+
+def toggle_play_pause():
+    subprocess.Popen(["playerctl", "play-pause", "--player=spotify"])
 
 def get_metadata():
-    """Lê metadados completos."""
-    artist = run(["playerctl", "metadata", "--format", "{{artist}}"])
-    title = run(["playerctl", "metadata", "--format", "{{title}}"])
-    status = run(["playerctl", "status"]).lower()
-    length = run(["playerctl", "metadata", "--format", "{{mpris:length}}"])
-    position = run(["playerctl", "position"])
+    artist = run(["playerctl", "metadata", "--player=spotify", "--format", "{{artist}}"])
+    title = run(["playerctl", "metadata", "--player=spotify", "--format", "{{title}}"])
+    status = run(["playerctl", "status", "--player=spotify"]).lower()
+    length = run(["playerctl", "metadata", "--player=spotify", "--format", "{{mpris:length}}"])
+    position = run(["playerctl", "position", "--player=spotify"])
     if status not in ["playing", "paused"]:
         return None
     try:
@@ -48,20 +56,16 @@ def get_metadata():
         "position": current_sec
     }
 
-
 def marquee(text, pos, max_len):
-    """Efeito marquee individual."""
     if len(text) <= max_len:
         return text.ljust(max_len)
     text = text + "   "
     idx = pos % len(text)
     return (text + text)[idx:idx + max_len]
 
-
 def format_time(sec):
     m, s = divmod(int(sec), 60)
     return f"{m:02d}:{s:02d}"
-
 
 def build_progress_bar(current, total, width=20):
     if total == 0:
@@ -70,26 +74,21 @@ def build_progress_bar(current, total, width=20):
     empty = width - filled
     return ("─" * empty, "─" * filled)
 
-
 def build_tooltip(meta):
-    """Gera tooltip estilo Hyde Shell."""
     artist = escape_pango(meta["artist"])
     title = escape_pango(meta["title"])
     current = format_time(meta["position"])
     total = format_time(meta["length"])
     filled, empty = build_progress_bar(meta["position"], meta["length"], 10)
-
-    tooltip = (
+    return (
         f"<span foreground=\"#FFFFFF\"><b>{title}</b></span>\n"
         f"<span foreground=\"#F0E7AA\"><i>{artist}</i></span>\n"
         f"<span foreground=\"#FFFFFF\">{current}</span> "
         f"<span foreground=\"#CCC5C0\">{empty}</span>"
         f"<span foreground=\"#4B5F7D\">{filled}</span> "
         f"<span foreground=\"#FFFFFF\">{total}</span>\n"
-        f"<span size='x-small' foreground='#AAAAAA'>🎧 spotify\n🖱 click → play/pause\n🖱 scroll → volume +/-\n🖱 right-click → options</span>"
+        f"<span size='x-small' foreground='#AAAAAA'>🎧 spotify\n🖱 click → play/pause ou abrir\n🖱 scroll → volume +/-\n🖱 right-click → opções</span>"
     )
-    return tooltip
-
 
 def print_json(text, tooltip, player_class):
     sys.stdout.write(json.dumps({
@@ -99,21 +98,31 @@ def print_json(text, tooltip, player_class):
     }) + "\n")
     sys.stdout.flush()
 
-
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--click":
+        if is_spotify_running():
+            toggle_play_pause()
+        else:
+            launch_spotify()
+        sys.exit(0)
+
     scroll_artist = 0
     scroll_title = 0
     last_meta = None
 
     while True:
-        meta = get_metadata()
-        if not meta:
-            print_json("", "", "stopped")
+        if not is_spotify_running():
+            print_json(f"{ICON} Spotify", "Clique para abrir Spotify", "stopped")
             time.sleep(1)
             continue
-        
-        status_icon = "󰏤" if meta["status"] == "paused" else ""
 
+        meta = get_metadata()
+        if not meta:
+            print_json(f"{ICON} Spotify", " ", "paused")
+            time.sleep(1)
+            continue
+
+        status_icon = "󰏤" if meta["status"] == "paused" else " "
         key = (meta["artist"], meta["title"])
         if key != last_meta:
             scroll_artist = 0
@@ -122,30 +131,16 @@ def main():
 
         artist = escape_pango(meta["artist"])
         title = escape_pango(meta["title"])
-
-        artist_over = len(artist) > MAX_CHAR
-        title_over = len(title) > MAX_CHAR
-
-        if artist_over:
-            artist_disp = marquee(artist, scroll_artist, MAX_CHAR)
-            scroll_artist += 1
-        else:
-            artist_disp = artist
-
-        if title_over:
-            title_disp = marquee(title, scroll_title, MAX_CHAR)
-            scroll_title += 1
-        else:
-            title_disp = title
+        artist_disp = marquee(artist, scroll_artist, MAX_CHAR) if len(artist) > MAX_CHAR else artist
+        title_disp = marquee(title, scroll_title, MAX_CHAR) if len(title) > MAX_CHAR else title
+        if len(artist) > MAX_CHAR: scroll_artist += 1
+        if len(title) > MAX_CHAR: scroll_title += 1
 
         display_text = f"<i>{artist_disp}</i> • <b>{title_disp}</b>"
         text = f"{ICON} {status_icon} {display_text}"
-
         tooltip = build_tooltip(meta)
         print_json(text, tooltip, meta["status"])
-
         time.sleep(SCROLL_DELAY)
-
 
 if __name__ == "__main__":
     main()

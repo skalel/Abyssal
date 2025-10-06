@@ -5,7 +5,7 @@
     "interval": 0.3,
     "rotate": 0,
     "return-type": "json",
-    "on-click": "playerctl play-pause --player spotify",
+    "on-click": "hyde-shell spotify.py --click",
     "on-click-middle": "playerctl stop --player spotify",
     "on-scroll-up": "hyde-shell volumecontrol -p spotify i",
     "on-scroll-down": "hyde-shell volumecontrol -p spotify d",
@@ -21,7 +21,6 @@
       "repeat": "playerctl loop Track --player spotify",
       "loop": "playerctl loop Playlist --player spotify",
       "disable-loop": "playerctl loop None --player spotify",
-      // "volume": "hyde-shell volumecontrol -p spotify",
       "open": "gtk-launch spotify || gtk-launch spotify-launcher"
     }
   }
