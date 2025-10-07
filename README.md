@@ -17,6 +17,9 @@
 # Remova pacotes não utilizados (provindos do HyDE)
 sudo pacman -Rns dunst
 
+# Remova o Mako (caso utilizando CachyOS)
+sudo pacman -Rdd mako
+
 # Desative a inicialização do Mako nos arquivos do Hyprland
 sudo nano ~/.config/hypr/config/autostart.conf
 
