@@ -6,6 +6,7 @@ import sys
 import json
 import html
 import os
+import shutil
 
 ICON = ""
 MAX_CHAR = 12
@@ -27,12 +28,42 @@ def is_spotify_running():
     except subprocess.CalledProcessError:
         return False
 
+def _cmd_exists(cmd):
+    return shutil.which(cmd) is not None
+
 def launch_spotify():
-    subprocess.Popen(
-        ["setsid", "gtk-launch", "spotify"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
-    )
+    """
+    Tenta iniciar o Spotify de forma independente do processo pai.
+    1) systemd-run --user --scope (melhor quando disponível)
+    2) enfileira via at (se disponível)
+    """
+    if _cmd_exists("systemd-run"):
+        gtk = shutil.which("gtk-launch") or "gtk-launch"
+        try:
+            subprocess.Popen(
+                ["systemd-run", "--user", "--scope", "--unit=spotify-launch", gtk, "spotify"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            return
+        except Exception:
+            pass
+
+    # 2) fallback: enfileirar via 'at' (se atd estiver instalado)
+    if _cmd_exists("at"):
+        try:
+            cmd = "gtk-launch spotify"
+            subprocess.Popen(["bash", "-lc", f'echo "{cmd}" | at now'],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return
+        except Exception:
+            pass
+
+    try:
+        subprocess.Popen(["setsid", "gtk-launch", "spotify"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         preexec_fn=os.setpgrp)
+    except Exception:
+        print("launch_spotify: falha ao iniciar spotify por métodos conhecidos", file=sys.stderr)
 
 def toggle_play_pause():
     subprocess.Popen(["playerctl", "play-pause", "--player=spotify"])
