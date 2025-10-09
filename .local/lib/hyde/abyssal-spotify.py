@@ -1,0 +1,1 @@
+/home/kalel/.config/waybar/modules/abyssal-spotify.py

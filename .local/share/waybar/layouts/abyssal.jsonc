@@ -27,7 +27,7 @@
     "group/pill#left2": {
         "orientation": "inherit",
         "modules": [
-            "custom/spotify"
+            "custom/abyssal-spotify"
         ]
     },
     "modules-center": [
