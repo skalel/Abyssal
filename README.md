@@ -58,4 +58,5 @@ Tema criado por Kal-El
 ---
 
 📎 TODO \
- Adicionar script de instalação automatizado
+ Adicionar script de instalação automatizado \
+ Adicionar módulo para TODO e Pomodoro ao sistema (verificar possibilidades de customização)
