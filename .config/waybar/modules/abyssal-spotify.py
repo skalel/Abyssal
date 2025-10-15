@@ -167,8 +167,11 @@ def main():
 
         artist = escape_pango(meta["artist"])
         title = escape_pango(meta["title"])
-        artist_disp = marquee(artist, scroll_artist, MAX_CHAR) if len(artist) > MAX_CHAR else artist
-        title_disp = marquee(title, scroll_title, MAX_CHAR) if len(title) > MAX_CHAR else title
+        artist_disp_raw = marquee(meta["artist"], scroll_artist, MAX_CHAR) if len(meta["artist"]) > MAX_CHAR else meta["artist"]
+        title_disp_raw  = marquee(meta["title"],  scroll_title, MAX_CHAR) if len(meta["title"])  > MAX_CHAR else meta["title"]
+
+        artist_disp = escape_pango(artist_disp_raw)
+        title_disp  = escape_pango(title_disp_raw)
         if len(artist) > MAX_CHAR: scroll_artist += 1
         if len(title) > MAX_CHAR: scroll_title += 1
 
